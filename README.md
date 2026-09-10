@@ -1,4 +1,4 @@
-# Cashora
+﻿# Cashora
 
 Your everyday cash, made visible.
 
@@ -8,7 +8,7 @@ Cashora is an iPhone-first Progressive Web App for students and young adults who
 
 - Starting cash per day
 - Add expense / add savings
-- **Safe to Spend** = Starting − Spent − Saved
+- **Safe to Spend** = Starting ΓêÆ Spent ΓêÆ Saved
 - Cash Timeline
 - Today's progress
 - History, Goals, light Insights
@@ -37,7 +37,7 @@ Open [http://localhost:3000](http://localhost:3000).
 
 Cashora is **local-first** (no Supabase / no env secrets required).
 
-### Option A — GitHub + Vercel Dashboard (recommended)
+### Option A ΓÇö GitHub + Vercel Dashboard (recommended)
 
 1. Initialize git and push to GitHub (ask the agent to commit/push if you want help):
    ```bash
@@ -46,12 +46,12 @@ Cashora is **local-first** (no Supabase / no env secrets required).
    git commit -m "Initial Cashora PWA"
    gh repo create cashora --private --source=. --remote=origin --push
    ```
-2. Open [vercel.com/new](https://vercel.com/new) → import the `cashora` repo.
+2. Open [vercel.com/new](https://vercel.com/new) ΓåÆ import the `cashora` repo.
 3. Framework Preset: **Next.js**. Leave Environment Variables empty.
 4. Click **Deploy**.
 5. Copy your live URL: `https://<project>.vercel.app`
 
-### Option B — Vercel CLI (from this folder)
+### Option B ΓÇö Vercel CLI (from this folder)
 
 ```bash
 npx vercel login
@@ -64,14 +64,14 @@ Follow prompts (link to your Vercel account / team). Production URL prints at th
 ### After deploy
 
 1. Open the URL on iPhone **Safari**
-2. Share → **Add to Home Screen**
+2. Share ΓåÆ **Add to Home Screen**
 3. Optional: QR code for the same URL
 
 ### QR for testers
 
 1. Deploy to Vercel
 2. Generate a QR for `https://your-app.vercel.app`
-3. Friends scan → Safari → **Share → Add to Home Screen**
+3. Friends scan ΓåÆ Safari ΓåÆ **Share ΓåÆ Add to Home Screen**
 
 ## Install on iPhone
 
