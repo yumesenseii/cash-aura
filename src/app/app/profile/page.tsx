@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { PageHeader, Surface } from "@/components/ui/Surface";
 import { useCashora } from "@/context/CashoraContext";
 import { COPY, FAQ_ITEMS, PRODUCT } from "@/lib/content";
@@ -16,6 +16,13 @@ import {
 const inputClass =
   "w-full rounded-xl border border-[var(--color-deep)]/12 bg-[var(--color-cream)]/80 px-3 py-2.5 text-[var(--color-deep)] outline-none focus:border-[var(--color-soft)]";
 
+function sanitizeCashInput(raw: string) {
+  const cleaned = raw.replace(/[^0-9.]/g, "");
+  const [whole, ...rest] = cleaned.split(".");
+  if (rest.length === 0) return whole;
+  return `${whole}.${rest.join("").replace(/\./g, "")}`;
+}
+
 export default function ProfilePage() {
   const { state, updatePrefs, resetAll, setStartingCash, today } = useCashora();
   const { prefs } = state;
@@ -23,6 +30,37 @@ export default function ProfilePage() {
   const initial = (name[0] || "C").toUpperCase();
   const life = lifetimeStats(state.transactions, state.days);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
+
+  const canonicalStarting =
+    today.hasDay && today.starting > 0
+      ? today.starting
+      : prefs.defaultStartingCash > 0
+        ? prefs.defaultStartingCash
+        : 500;
+
+  const [startingDraft, setStartingDraft] = useState(String(canonicalStarting));
+  const [startingFocused, setStartingFocused] = useState(false);
+  const [startingError, setStartingError] = useState("");
+
+  useEffect(() => {
+    if (!startingFocused) {
+      setStartingDraft(String(canonicalStarting));
+    }
+  }, [canonicalStarting, startingFocused]);
+
+  function commitStartingCash(raw: string) {
+    const value = Number(raw);
+    if (!raw.trim() || !Number.isFinite(value) || value <= 0) {
+      setStartingError("Enter an amount greater than 0. Field can’t be blank.");
+      setStartingDraft(String(canonicalStarting));
+      return;
+    }
+    const amount = Math.round(value * 100) / 100;
+    setStartingError("");
+    setStartingDraft(String(amount));
+    updatePrefs({ defaultStartingCash: amount });
+    setStartingCash(amount);
+  }
 
   const habits = useMemo(() => {
     const daySet = new Set(state.days.map((d) => d.date));
@@ -193,19 +231,33 @@ export default function ProfilePage() {
         >
           <input
             inputMode="decimal"
-            value={
-              today.hasDay
-                ? today.starting
-                : (prefs.defaultStartingCash ?? 500)
-            }
-            onChange={(e) => {
-              const amount = Number(e.target.value) || 0;
-              updatePrefs({ defaultStartingCash: amount });
-              if (amount > 0) setStartingCash(amount);
+            type="text"
+            autoComplete="off"
+            value={startingDraft}
+            onFocus={() => {
+              setStartingFocused(true);
+              setStartingError("");
             }}
+            onChange={(e) => {
+              setStartingDraft(sanitizeCashInput(e.target.value));
+              if (startingError) setStartingError("");
+            }}
+            onBlur={() => {
+              setStartingFocused(false);
+              commitStartingCash(startingDraft);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                e.currentTarget.blur();
+              }
+            }}
+            aria-invalid={Boolean(startingError)}
             className={inputClass}
           />
         </FieldLabel>
+        {startingError ? (
+          <p className="text-sm text-red-700">{startingError}</p>
+        ) : null}
         <p className="rounded-xl bg-[var(--color-mist)]/50 px-3 py-2 text-xs text-[var(--color-deep)]/60">
           Currency stays Philippine Peso (₱). Cashora tracks physical cash — not
           a wallet or bank. You can also edit today&apos;s start from Home → Edit
