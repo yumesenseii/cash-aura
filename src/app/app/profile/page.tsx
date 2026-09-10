@@ -361,6 +361,11 @@ export default function ProfilePage() {
         <p className="mt-2 text-sm leading-relaxed text-[var(--color-deep)]/70">
           {PRODUCT.privacy}
         </p>
+        <p className="mt-3 rounded-xl bg-[var(--color-mist)]/55 px-3 py-2 text-sm text-[var(--color-deep)]/70">
+          Your name, cash logs, and goals stay on <strong>this device</strong>{" "}
+          until you tap Reset. They are not wiped by normal use or redeploys of
+          the same app URL.
+        </p>
         <ul className="mt-3 space-y-1.5 text-sm text-[var(--color-deep)]/65">
           <li>• Days, transactions, goals, and preferences</li>
           <li>• Stored in this browser / Home Screen app only</li>
@@ -400,14 +405,16 @@ export default function ProfilePage() {
         <button
           type="button"
           onClick={() => {
-            if (
-              window.confirm(
-                "Reset Cashora on this device? This cannot be undone."
-              )
-            ) {
-              resetAll();
-              window.location.href = "/app/onboarding";
-            }
+            const first = window.confirm(
+              "Reset Cashora on this device?\n\nYour name, cash logs, and goals will be deleted. This cannot be undone."
+            );
+            if (!first) return;
+            const second = window.confirm(
+              "Final confirm: permanently erase all Cashora data on this device?"
+            );
+            if (!second) return;
+            resetAll();
+            window.location.href = "/app/onboarding";
           }}
           className="mt-3 cursor-pointer rounded-xl bg-gradient-to-r from-red-700 to-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_18px_rgba(185,28,28,0.25)] transition hover:opacity-90"
         >

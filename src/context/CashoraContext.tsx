@@ -71,7 +71,9 @@ export function CashoraProvider({ children }: { children: ReactNode }) {
   const [ready, setReady] = useState(false);
 
   useEffect(() => {
-    setState(loadState());
+    // Load once; never overwrite localStorage with the empty bootstrap state.
+    const loaded = loadState();
+    setState(loaded);
     setReady(true);
   }, []);
 

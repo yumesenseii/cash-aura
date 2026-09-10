@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { Modal } from "@/components/Modal";
 import { PageHeader, Surface } from "@/components/ui/Surface";
@@ -28,7 +28,7 @@ import {
 type DateFilter = "all" | "today" | "week" | "month";
 type TypeFilter = "all" | "expense" | "savings" | "income";
 
-function SegmentedControl<T extends string>({
+function ChipRow<T extends string>({
   value,
   options,
   onChange,
@@ -38,24 +38,18 @@ function SegmentedControl<T extends string>({
   onChange: (id: T) => void;
 }) {
   return (
-    <div
-      role="tablist"
-      className="grid gap-0.5 rounded-xl border border-[var(--color-deep)]/10 bg-[var(--color-mist)]/55 p-0.5"
-      style={{ gridTemplateColumns: `repeat(${options.length}, minmax(0, 1fr))` }}
-    >
+    <div className="flex flex-wrap gap-1.5">
       {options.map((opt) => {
         const active = value === opt.id;
         return (
           <button
             key={opt.id}
             type="button"
-            role="tab"
-            aria-selected={active}
             onClick={() => onChange(opt.id)}
-            className={`cursor-pointer rounded-lg px-1.5 py-2 text-center text-[11px] font-semibold transition-colors duration-150 ${
+            className={`cursor-pointer rounded-full px-2.5 py-1 text-[11px] font-semibold transition-colors ${
               active
-                ? "bg-[var(--color-deep)] text-white shadow-sm"
-                : "text-[var(--color-deep)]/55 hover:text-[var(--color-deep)]"
+                ? "bg-[var(--color-deep)] text-white"
+                : "bg-[var(--color-mist)] text-[var(--color-deep)]/60 hover:text-[var(--color-deep)]"
             }`}
           >
             {opt.label}
@@ -74,6 +68,156 @@ function FilterLabel({ children }: { children: ReactNode }) {
   );
 }
 
+function HistoryFilterControl({
+  dateFilter,
+  setDateFilter,
+  typeFilter,
+  setTypeFilter,
+  bucket,
+  setBucket,
+  query,
+  setQuery,
+  activeCount,
+  onClear,
+}: {
+  dateFilter: DateFilter;
+  setDateFilter: (v: DateFilter) => void;
+  typeFilter: TypeFilter;
+  setTypeFilter: (v: TypeFilter) => void;
+  bucket: HistoryBucket;
+  setBucket: (v: HistoryBucket) => void;
+  query: string;
+  setQuery: (v: string) => void;
+  activeCount: number;
+  onClear: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDoc(e: MouseEvent) {
+      if (!panelRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    function onKey(e: KeyboardEvent) {
+      if (e.key === "Escape") setOpen(false);
+    }
+    document.addEventListener("mousedown", onDoc);
+    window.addEventListener("keydown", onKey);
+    return () => {
+      document.removeEventListener("mousedown", onDoc);
+      window.removeEventListener("keydown", onKey);
+    };
+  }, [open]);
+
+  return (
+    <div className="relative" ref={panelRef}>
+      <button
+        type="button"
+        aria-expanded={open}
+        aria-haspopup="dialog"
+        onClick={() => setOpen((v) => !v)}
+        className="relative inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-[var(--color-deep)]/12 bg-[var(--color-off)] px-3 py-2 text-xs font-semibold text-[var(--color-deep)] shadow-sm transition hover:bg-[var(--color-mist)]/70"
+      >
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden>
+          <path
+            d="M4 6h16M7 12h10M10 18h4"
+            stroke="currentColor"
+            strokeWidth="1.8"
+            strokeLinecap="round"
+          />
+        </svg>
+        Filter
+        {activeCount > 0 ? (
+          <span className="absolute -right-1 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--color-brown)] px-1 text-[9px] font-bold text-white">
+            {activeCount}
+          </span>
+        ) : null}
+      </button>
+
+      {open ? (
+        <div
+          role="dialog"
+          aria-label="History filters"
+          className="absolute right-0 z-30 mt-2 w-[min(calc(100vw-2rem),19.5rem)] space-y-3 rounded-2xl border border-[var(--color-deep)]/10 bg-[var(--color-off)] p-3 shadow-[var(--shadow-lift)]"
+        >
+          <div>
+            <FilterLabel>Period</FilterLabel>
+            <ChipRow
+              value={dateFilter}
+              onChange={setDateFilter}
+              options={[
+                { id: "all", label: "All" },
+                { id: "today", label: "Today" },
+                { id: "week", label: "Week" },
+                { id: "month", label: "Month" },
+              ]}
+            />
+          </div>
+
+          <div>
+            <FilterLabel>Type</FilterLabel>
+            <ChipRow
+              value={typeFilter}
+              onChange={setTypeFilter}
+              options={[
+                { id: "all", label: "All" },
+                { id: "expense", label: "Expenses" },
+                { id: "savings", label: "Savings" },
+                { id: "income", label: "Income" },
+              ]}
+            />
+          </div>
+
+          <div>
+            <FilterLabel>Category</FilterLabel>
+            <select
+              value={bucket}
+              onChange={(e) => setBucket(e.target.value as HistoryBucket)}
+              className="w-full cursor-pointer rounded-xl border border-[var(--color-deep)]/10 bg-[var(--color-cream)]/90 px-3 py-2 text-sm font-medium text-[var(--color-deep)] outline-none focus:border-[var(--color-soft)]"
+            >
+              {HISTORY_BUCKETS.map((b) => (
+                <option key={b} value={b}>
+                  {b === "All" ? "All categories" : b}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <FilterLabel>Search</FilterLabel>
+            <input
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search transactions"
+              className="w-full rounded-xl border border-[var(--color-deep)]/10 bg-[var(--color-cream)]/90 px-3 py-2 text-sm text-[var(--color-deep)] outline-none focus:border-[var(--color-soft)]"
+            />
+          </div>
+
+          <div className="flex gap-2 pt-1">
+            <button
+              type="button"
+              onClick={() => {
+                onClear();
+              }}
+              className="flex-1 cursor-pointer rounded-xl bg-[var(--color-mist)] py-2 text-xs font-semibold text-[var(--color-deep)]/70"
+            >
+              Clear
+            </button>
+            <button
+              type="button"
+              onClick={() => setOpen(false)}
+              className="btn-save flex-1 cursor-pointer rounded-xl py-2 text-xs font-semibold text-white"
+            >
+              Done
+            </button>
+          </div>
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
 export default function HistoryPage() {
   const { state, updateTransaction, deleteTransaction } = useCashora();
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
@@ -82,6 +226,12 @@ export default function HistoryPage() {
   const [query, setQuery] = useState("");
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editing, setEditing] = useState(false);
+
+  const activeFilterCount =
+    (dateFilter !== "all" ? 1 : 0) +
+    (typeFilter !== "all" ? 1 : 0) +
+    (bucket !== "All" ? 1 : 0) +
+    (query.trim() ? 1 : 0);
 
   const rangeIds = useMemo(() => {
     const today = todayId();
@@ -183,6 +333,25 @@ export default function HistoryPage() {
         title="History"
         subtitle="Where did your cash go?"
         eyebrow="Cash log"
+        action={
+          <HistoryFilterControl
+            dateFilter={dateFilter}
+            setDateFilter={setDateFilter}
+            typeFilter={typeFilter}
+            setTypeFilter={setTypeFilter}
+            bucket={bucket}
+            setBucket={setBucket}
+            query={query}
+            setQuery={setQuery}
+            activeCount={activeFilterCount}
+            onClear={() => {
+              setDateFilter("all");
+              setTypeFilter("all");
+              setBucket("All");
+              setQuery("");
+            }}
+          />
+        }
       />
 
       <Surface className="fade-up p-4">
@@ -212,87 +381,6 @@ export default function HistoryPage() {
             </p>
             <p className="font-bold text-[var(--color-deep)]">{summary.count}</p>
           </div>
-        </div>
-      </Surface>
-
-      <Surface className="fade-up space-y-4 p-4">
-        <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-[var(--color-deep)]/45">
-          Filters
-        </p>
-
-        <div>
-          <FilterLabel>Period</FilterLabel>
-          <SegmentedControl
-            value={dateFilter}
-            onChange={setDateFilter}
-            options={[
-              { id: "all", label: "All" },
-              { id: "today", label: "Today" },
-              { id: "week", label: "Week" },
-              { id: "month", label: "Month" },
-            ]}
-          />
-        </div>
-
-        <div>
-          <FilterLabel>Type</FilterLabel>
-          <SegmentedControl
-            value={typeFilter}
-            onChange={setTypeFilter}
-            options={[
-              { id: "all", label: "All" },
-              { id: "expense", label: "Expenses" },
-              { id: "savings", label: "Savings" },
-              { id: "income", label: "Income" },
-            ]}
-          />
-        </div>
-
-        <div>
-          <FilterLabel>Search</FilterLabel>
-          <div className="relative">
-            <span
-              className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-[var(--color-deep)]/35"
-              aria-hidden
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
-                <circle
-                  cx="11"
-                  cy="11"
-                  r="6.5"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                />
-                <path
-                  d="M16.5 16.5 20 20"
-                  stroke="currentColor"
-                  strokeWidth="1.8"
-                  strokeLinecap="round"
-                />
-              </svg>
-            </span>
-            <input
-              value={query}
-              onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search transactions"
-              className="w-full rounded-xl border border-[var(--color-deep)]/10 bg-[var(--color-cream)]/90 py-2.5 pl-9 pr-3 text-sm text-[var(--color-deep)] outline-none transition focus:border-[var(--color-soft)]"
-            />
-          </div>
-        </div>
-
-        <div>
-          <FilterLabel>Category</FilterLabel>
-          <select
-            value={bucket}
-            onChange={(e) => setBucket(e.target.value as HistoryBucket)}
-            className="w-full cursor-pointer rounded-xl border border-[var(--color-deep)]/10 bg-[var(--color-cream)]/90 px-3 py-2.5 text-sm font-medium text-[var(--color-deep)] outline-none transition focus:border-[var(--color-soft)]"
-          >
-            {HISTORY_BUCKETS.map((b) => (
-              <option key={b} value={b}>
-                {b === "All" ? "All categories" : b}
-              </option>
-            ))}
-          </select>
         </div>
       </Surface>
 

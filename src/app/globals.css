@@ -24,8 +24,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-nunito);
-  --font-display: var(--font-display);
+  --font-sans: var(--font-poppins);
+  --font-display: var(--font-poppins);
 }
 
 * {
@@ -52,7 +52,7 @@ html {
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-nunito), "Nunito", sans-serif;
+  font-family: var(--font-poppins), "Poppins", sans-serif;
 }
 
 input,
