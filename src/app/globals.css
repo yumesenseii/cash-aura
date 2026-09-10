@@ -1,0 +1,199 @@
+@import "tailwindcss";
+
+:root {
+  --color-deep: #294c60;
+  --color-soft: #8fafc0;
+  --color-brown: #8b6248;
+  --color-cream: #f6f0e6;
+  --color-off: #fffdf8;
+  --color-mist: #e8eef2;
+  --background: var(--color-cream);
+  --foreground: var(--color-deep);
+  --shadow-soft: 0 10px 30px rgba(41, 76, 96, 0.08);
+  --shadow-lift: 0 14px 36px rgba(41, 76, 96, 0.12);
+  --grad-hero: linear-gradient(145deg, #294c60 0%, #3d6a82 48%, #8fafc0 140%);
+  --grad-expense: linear-gradient(135deg, #8b6248 0%, #a57a5c 100%);
+  --grad-save: linear-gradient(135deg, #294c60 0%, #5f8aa0 100%);
+  --grad-surface: linear-gradient(
+    165deg,
+    rgba(255, 253, 248, 0.96) 0%,
+    rgba(246, 240, 230, 0.88) 100%
+  );
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-nunito);
+  --font-display: var(--font-display);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-nunito), "Nunito", sans-serif;
+}
+
+input,
+select,
+button,
+textarea {
+  font: inherit;
+}
+
+.app-atmosphere {
+  position: relative;
+  isolation: isolate;
+  background:
+    radial-gradient(ellipse 90% 55% at 10% -10%, rgba(143, 175, 192, 0.35), transparent 55%),
+    radial-gradient(ellipse 70% 45% at 100% 0%, rgba(139, 98, 72, 0.14), transparent 50%),
+    radial-gradient(ellipse 60% 40% at 80% 100%, rgba(143, 175, 192, 0.22), transparent 55%),
+    var(--color-cream);
+}
+
+.app-atmosphere::before {
+  content: "";
+  pointer-events: none;
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  opacity: 0.4;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.45'/%3E%3C/svg%3E");
+  mix-blend-mode: soft-light;
+}
+
+.surface-card {
+  background: var(--grad-surface);
+  border: 1px solid rgba(41, 76, 96, 0.08);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+}
+
+.surface-hero {
+  background: var(--grad-hero);
+  box-shadow: var(--shadow-lift);
+  position: relative;
+  overflow: hidden;
+}
+
+.surface-hero::after {
+  content: "";
+  position: absolute;
+  inset: -40% -20% auto auto;
+  width: 70%;
+  height: 90%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 253, 248, 0.22), transparent 65%);
+  pointer-events: none;
+}
+
+.btn-expense {
+  background: var(--grad-expense);
+  box-shadow: 0 8px 20px rgba(139, 98, 72, 0.28);
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.btn-expense:hover {
+  opacity: 0.95;
+}
+
+.btn-expense:active {
+  transform: scale(0.98);
+}
+
+.btn-save {
+  background: var(--grad-save);
+  box-shadow: 0 8px 20px rgba(41, 76, 96, 0.25);
+  transition: transform 180ms ease, box-shadow 180ms ease, opacity 180ms ease;
+}
+
+.btn-save:hover {
+  opacity: 0.95;
+}
+
+.btn-save:active {
+  transform: scale(0.98);
+}
+
+.stat-chip {
+  background: linear-gradient(
+    160deg,
+    rgba(255, 253, 248, 0.95),
+    rgba(232, 238, 242, 0.65)
+  );
+  border: 1px solid rgba(41, 76, 96, 0.07);
+  box-shadow: var(--shadow-soft);
+}
+
+.fade-up {
+  animation: fade-up 420ms ease both;
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.progress-shine {
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 253, 248, 0.35),
+    transparent
+  );
+  transform: translateX(-100%);
+  animation: shine 2.4s ease-in-out infinite;
+}
+
+@keyframes shine {
+  0%,
+  40% {
+    transform: translateX(-100%);
+  }
+  70%,
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-up,
+  .progress-shine::after {
+    animation: none;
+  }
+}
