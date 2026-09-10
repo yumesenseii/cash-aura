@@ -17,7 +17,7 @@ const inputClass =
   "w-full rounded-xl border border-[var(--color-deep)]/12 bg-[var(--color-cream)]/80 px-3 py-2.5 text-[var(--color-deep)] outline-none focus:border-[var(--color-soft)]";
 
 export default function ProfilePage() {
-  const { state, updatePrefs, resetAll } = useCashora();
+  const { state, updatePrefs, resetAll, setStartingCash, today } = useCashora();
   const { prefs } = state;
   const name = prefs.name?.trim() || "";
   const initial = (name[0] || "C").toUpperCase();
@@ -188,23 +188,28 @@ export default function ProfilePage() {
       <Surface className="fade-up space-y-4 p-5">
         <SectionTitle>Cash defaults</SectionTitle>
         <FieldLabel
-          label="Default starting cash (₱)"
-          hint="Suggested amount when you start a new day"
+          label="Starting cash (₱)"
+          hint="Updates Home for today, and is saved as your default for new days"
         >
           <input
             inputMode="decimal"
-            value={prefs.defaultStartingCash ?? 500}
-            onChange={(e) =>
-              updatePrefs({
-                defaultStartingCash: Number(e.target.value) || 0,
-              })
+            value={
+              today.hasDay
+                ? today.starting
+                : (prefs.defaultStartingCash ?? 500)
             }
+            onChange={(e) => {
+              const amount = Number(e.target.value) || 0;
+              updatePrefs({ defaultStartingCash: amount });
+              if (amount > 0) setStartingCash(amount);
+            }}
             className={inputClass}
           />
         </FieldLabel>
         <p className="rounded-xl bg-[var(--color-mist)]/50 px-3 py-2 text-xs text-[var(--color-deep)]/60">
           Currency stays Philippine Peso (₱). Cashora tracks physical cash — not
-          a wallet or bank.
+          a wallet or bank. You can also edit today&apos;s start from Home → Edit
+          start.
         </p>
       </Surface>
 
